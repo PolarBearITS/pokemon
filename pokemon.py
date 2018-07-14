@@ -1,6 +1,5 @@
 import pickle
 import itertools
-import bisect
 
 class type_analysis:
 	def __init__(self):
@@ -50,18 +49,20 @@ class type_analysis:
 		for r in ratios:
 			print(r, getattr(self, f'get_{AD}')(types, r))
 
-	def rank(self, AD, DMG_ratios, combo=1):
+	def rank(self, AD, DMG_ratios, combo=1, reverse=False):
 		types = [x for n in range(1, combo+1) for x in itertools.combinations(self.type_names, n)]
 		ranks = []
 		for t in types:
 			DMG_dict = dict(zip(DMG_ratios, (getattr(self, f'get_{AD}')(t , r) for r in DMG_ratios)))
-			# DMG_lists = [getattr(self, f'get_{AD}')(t , r) for r in DMG_ratios]
 			for i, (_t, l) in enumerate(ranks):
-				if self.total_len(l) < self.total_len(DMG_dict):
+				# sort in decreasing order by default
+				if self.total_len(DMG_dict) > self.total_len(l):
 					ranks.insert(i, (t, DMG_dict))
 					break
 			else:
 				ranks.append((t, DMG_dict))
+		if reverse:
+			return list(reversed(ranks))
 		return ranks
 
 	def factory(self, name, AD):
@@ -72,7 +73,7 @@ class type_analysis:
 t = type_analysis()
 # names = ('ghost', 'ground')
 # print(t.get_DEF(names, 0.5))
-ranks = t.rank_ATK((2, 4), combo=2)
+ranks = t.rank_ATK((2, 4), combo=2, reverse=True)
 for t, lst in ranks:
 	print(t, lst)
 # names = ranks[0][0]
